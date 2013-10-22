@@ -19,7 +19,7 @@ shinyUI(pageWithSidebar(
         p(br()),
 
         strong('Options:'),
-        p('It will take about 20 seconds to execute these options.'),
+        p('It will take a while to execute these options.'),
 
         checkboxInput(inputId = "permutation",
             label = ("Show permutation (randomization) test"),
@@ -47,6 +47,11 @@ mainPanel(
 
         h3("Box plots with individual data points"),
         plotOutput("boxPlot", width="80%"),
+
+        br(),
+
+        h3("Test of normality"),
+        verbatimTextOutput("testnorm.out"),
 
         br(),
 
