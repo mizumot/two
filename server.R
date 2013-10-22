@@ -112,6 +112,24 @@ shinyServer(function(input, output) {
         arrows(2.2, mean(y), 2.2, mean(y) - sd(y), length = 0.1, angle = 45, col = "red")
     })
     
+    testnorm <- reactive({
+        x <- input$data1
+        x <- as.numeric(unlist(strsplit(x, "[\n, \t]")))
+        x <- x[!is.na(x)]
+        
+        y <- input$data2
+        y <- as.numeric(unlist(strsplit(y, "[\n, \t]")))
+        y <- y[!is.na(y)]
+        
+        data.1ks <- ks.test(scale(x), "pnorm")
+        data.1sh <- shapiro.test(x)
+        
+        data.2ks <- ks.test(scale(y), "pnorm")
+        data.2sh <- shapiro.test(y)
+        
+        return(list(Data.1 = data.1ks, Data.1 = data.1sh, Data.2 = data.2ks, Data.2 = data.2sh))
+    })
+
     levene <- reactive({
         x <- input$data1
         x <- as.numeric(unlist(strsplit(x, "[\n, \t]")))
@@ -253,6 +271,10 @@ shinyServer(function(input, output) {
         bs()
     })
     
+    output$testnorm.out <- renderPrint({
+        testnorm()
+    })
+
     output$levene.out <- renderPrint({
         levene()
     })
