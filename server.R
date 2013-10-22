@@ -2,8 +2,7 @@ library(shiny)
 library(psych)
 library(car)
 library(compute.es)
-library(exactRankTests)
-library(WRS)
+library(pwr)
 
 
 shinyServer(function(input, output) {
@@ -182,38 +181,7 @@ shinyServer(function(input, output) {
         
         mes(m1, m2, sd1, sd2, n1, n2)
     })
-    
-    perm <- reactive({
-        if (input$permutation) {
-            x <- input$data1
-            x <- as.numeric(unlist(strsplit(x, "[\n, \t]")))
-            x <- x[!is.na(x)]
-        
-            y <- input$data2
-            y <- as.numeric(unlist(strsplit(y, "[\n, \t]")))
-            y <- y[!is.na(y)]
-        
-            perm.test(x, y, conf.int = TRUE, exact = TRUE)
-        }
-    })
-    
-    
-    robust <- reactive({
-        if (input$robust) {
-            x <- input$data1
-            x <- as.numeric(unlist(strsplit(x, "[\n, \t]")))
-            x <- x[!is.na(x)]
-    
-            y <- input$data2
-            y <- as.numeric(unlist(strsplit(y, "[\n, \t]")))
-            y <- y[!is.na(y)]
-    
-            perm.test(x, y, conf.int = TRUE, exact = TRUE)
-            trimpb2 (x, y, tr=.2, alpha=.05, nboot=2000, win=F, plotit=F)
-        }
-    })
-    
-    
+
     mw <- reactive({
         U.test <- function(	x, y, correct = TRUE)
 		{
@@ -230,9 +198,12 @@ shinyServer(function(input, output) {
             V <- n1*n2*(n^3-n-sum(tie^3-tie))/12/(n^2-n) # variance ties considered
             E <- n1*n2/2 # Expected
             z <- (abs(U-E)-ifelse(correct, 0.5, 0))/sqrt(V)  # z-value
+            EffectSize.r <- z/sqrt(n)
             P <- pnorm(z, lower.tail=FALSE)*2
-            return(structure(list(statistic=c(U=U, "E(U)"=E, "V(U)"=V, "z-value"=z),
-            p.value=P), class="htest"))
+            cat(" U =", U, ",", "E(U) =", E, ",", "V(U) =", V, "\n",
+               "z-value =", z, "\n",
+               "p.value =", P, "\n", "\n",
+               "effect eize r =", EffectSize.r)
         }
         
         x <- input$data1
@@ -244,26 +215,51 @@ shinyServer(function(input, output) {
         y <- y[!is.na(y)]
 
         ut <- U.test(x, y, correct = FALSE)
-        
-        
-        x <- x[!is.na(x)]
-        y <- y[!is.na(y)]
-        n1 <- length(x)
-        n2 <- length(y)
-        n <- n1+n2
-        xy <- c(x, y)
-        r <- rank(xy)
-        U1 <- n1*n2+n1*(n1+1)/2-sum(r[1:n1])
-        tie <- table(r)
-        U <- min(U1, n1*n2-U1) # U
-        V <- n1*n2*(n^3-n-sum(tie^3-tie))/12/(n^2-n) # variance ties considered
-        E <- n1*n2/2 # Expected
-        z <- abs(U-E)/sqrt(V)  # z-value
-        EffectSize.r <- z/sqrt(n)
-        
-        return(list(ut, EffectSize.r = EffectSize.r))
 
     })
+    
+    power <- reactive({
+        x <- input$data1
+        x <- as.numeric(unlist(strsplit(x, "[\n, \t]")))
+        x <- x[!is.na(x)]
+        
+        y <- input$data2
+        y <- as.numeric(unlist(strsplit(y, "[\n, \t]")))
+        y <- y[!is.na(y)]
+        
+        m1 <- mean(x)
+        sd1 <- sd(x)
+        n1 <- length(x)
+        
+        m2 <- mean(y)
+        sd2 <- sd(y)
+        n2 <- length(y)
+        
+        s.within <- sqrt(((n1 - 1) * sd1^2 + (n2 - 1) * sd2^2)/(n1 + n2 - 2))
+        d <- (m1 - m2)/s.within
+        
+        posthoc <- pwr.t2n.test(n1 = n1, n2 = n2, d = d, sig.level = 0.05)$power
+        
+        future <- ceiling(power.t.test(power = 0.8, delta = d, sig.level = 0.05,
+                          type = 'two.sample', strict = T, alternative = "two.sided")$n)
+                          
+        cat(" Post hoc (observed) power =", round(posthoc, 3), "\n",
+            "\n",
+            "  Note: According to Cumming (2012), post hoc power is 'illegitimate'", "\n",
+            "        and we should NEVER calculate or report it.", "\n",
+            "\n",
+            "\n",
+            "Sample size needed for future experiment:", "\n",
+            " n =", future, "(n is number in *each* group.)", "\n",
+            " Power = 0.8, sig.level = 0.05, alternative = two.sided, d =", round(d, 2), "\n",
+            "\n",
+            "  Note: This is true only PROVIDED that the population effect size is", "\n",
+            "        equal to the observed sample effect size (i.e., it is unrealistic).", "\n",
+            "\n",
+            "\n",
+            "POWER ANALYSIS SHOULD BE CONDUCTED PRIOR TO THE EXPERIMENT!", "\n")
+    })
+    
 
 
 
@@ -287,16 +283,12 @@ shinyServer(function(input, output) {
         es()
     })
     
-    output$perm.out <- renderPrint({
-        perm()
-    })
-    
-    output$robust.out <- renderPrint({
-        robust()
-    })
-    
     output$mw.out <- renderPrint({
         mw()
+    })
+    
+    output$power.out <- renderPrint({
+        power()
     })
 
 
