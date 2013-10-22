@@ -14,20 +14,7 @@ shinyUI(pageWithSidebar(
         p(br()),
 
         p(strong("Data 2:")),
-        tags$textarea(id="data2", rows=20, cols=10, "22\n100\n45\n66\n77\n88\n76\n79\n44\n55\n65\n76\n66\n44\n32\n55\n56\n57\n77\n65\n40\n41\n49\n60"),
-
-        p(br()),
-
-        strong('Options:'),
-        p('It will take a while to execute these options.'),
-
-        checkboxInput(inputId = "permutation",
-            label = ("Show permutation (randomization) test"),
-            value = FALSE),
-
-        checkboxInput(inputId = "robust",
-            label = ("Show robust t-test"),
-            value = FALSE)
+        tags$textarea(id="data2", rows=20, cols=10, "22\n100\n45\n66\n77\n88\n76\n79\n44\n55\n65\n76\n66\n44\n32\n55\n56\n57\n77\n65\n40\n41\n49\n60")
 
         ),
 
@@ -70,18 +57,13 @@ mainPanel(
 
         br(),
 
-        h3("Permutation (Randomization) test"),
-        verbatimTextOutput("perm.out"),
-
-        br(),
-
-        h3("Robust t-test"),
-        verbatimTextOutput("robust.out"),
-
-        br(),
-
         h3("Mann-Whitney U-test"),
-        verbatimTextOutput("mw.out")
+        verbatimTextOutput("mw.out"),
+
+        br(),
+
+        h3("Power analysis (Just for a reference)"),
+        verbatimTextOutput("power.out")
 
         ),
 
