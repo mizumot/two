@@ -26,7 +26,8 @@ shinyServer(function(input, output) {
     })
 
 
-    output$distPlot <- renderPlot({
+
+    makedistPlot <- function(){
         x <- input$data1
         x <- as.numeric(unlist(strsplit(x, "[\n, \t]")))
         x <- x[!is.na(x)]
@@ -65,7 +66,7 @@ shinyServer(function(input, output) {
         breaks.y <- pretty(y, nclass.y)
         counts.y <- simple.bincount(y, breaks.y)
         counts.max.y <- max(counts.y)
-
+        
         counts.max <- max(c(counts.max.x, counts.max.y))
         
         
@@ -78,15 +79,20 @@ shinyServer(function(input, output) {
         p2 <- hist(y, xlim = c(xy.min, xy.max), ylim = c(0, counts.max*1.3))
         
         plot(p1, las=1, xlab = "Data 1 is expressed in blue; Data 2 in red. Vertical lines show the mean.",
-             main = "", col = rgb(0,0,1,1/4), xlim = c(xy.min,xy.max), ylim = c(0, counts.max*1.3))
+        main = "", col = rgb(0,0,1,1/4), xlim = c(xy.min,xy.max), ylim = c(0, counts.max*1.3))
         plot(p2, las=1, xlab = "", main = "", col = rgb(1,0,0,1/4), xlim = c(xy.min,xy.max), ylim = c(0, counts.max*1.3), add = T)
         
         abline(v = mean(x), col = "blue", lwd = 2)
         abline(v = mean(y), col = "red", lwd = 2)
-        
+    }
+
+    output$distPlot <- renderPlot({
+        print(makedistPlot())
     })
     
-    output$boxPlot <- renderPlot({
+    
+    
+    makeboxPlot <- function(){
         x <- input$data1
         x <- as.numeric(unlist(strsplit(x, "[\n, \t]")))
         x <- x[!is.na(x)]
@@ -109,7 +115,13 @@ shinyServer(function(input, output) {
         points(2.2, mean(y), pch = 18, col = "red", cex = 2)
         arrows(2.2, mean(y), 2.2, mean(y) + sd(y), length = 0.1, angle = 45, col = "red")
         arrows(2.2, mean(y), 2.2, mean(y) - sd(y), length = 0.1, angle = 45, col = "red")
+    }
+
+    output$boxPlot <- renderPlot({
+        print(makeboxPlot())
     })
+    
+    
     
     testnorm <- reactive({
         x <- input$data1
@@ -260,6 +272,18 @@ shinyServer(function(input, output) {
             "POWER ANALYSIS SHOULD BE CONDUCTED PRIOR TO THE EXPERIMENT!", "\n")
     })
     
+    
+    info <- reactive({
+        info1 <- paste("This analysis was conducted with ", strsplit(R.version$version.string, " \\(")[[1]][1], ".", sep = "")# バージョン情報
+        info2 <- paste("It was executed on ", date(), ".", sep = "")# 実行日時
+        cat(sprintf(info1), "\n")
+        cat(sprintf(info2), "\n")
+    })
+    
+    output$info.out <- renderPrint({
+        info()
+    })
+
 
 
 
@@ -290,6 +314,29 @@ shinyServer(function(input, output) {
     output$power.out <- renderPrint({
         power()
     })
+    
+    output$downloadDistPlot <- downloadHandler(
+    filename = function() {
+        paste('Distribution -', Sys.Date(), '.pdf', sep='')
+    },
+    content = function(FILE=NULL) {
+        pdf(file=FILE)
+		print(makedistPlot())
+		dev.off()
+	})
+    
+    output$downloadBoxPlot <- downloadHandler(
+    filename = function() {
+        paste('Boxplot-', Sys.Date(), '.pdf', sep='')
+    },
+    content = function(FILE=NULL) {
+        pdf(file=FILE)
+		print(makeboxPlot())
+		dev.off()
+	})
+
+
+
 
 
 })
