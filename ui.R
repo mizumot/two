@@ -8,6 +8,9 @@ shinyUI(pageWithSidebar(
 
     sidebarPanel(
 
+        p('Input values can be separated by', br(),
+          'newlines, spaces, commas, or tabs.'),
+
         p(strong("Data 1:")),
         tags$textarea(id="data1", rows=20, cols=10, "50\n56\n79\n99\n56\n66\n67\n81\n55\n44\n45\n43\n77\n72\n60\n37\n39\n56\n66\n85\n55"),
 
@@ -15,7 +18,6 @@ shinyUI(pageWithSidebar(
 
         p(strong("Data 2:")),
         tags$textarea(id="data2", rows=20, cols=10, "22\n100\n45\n66\n77\n88\n76\n79\n44\n55\n65\n76\n66\n44\n32\n55\n56\n57\n77\n65\n40\n41\n49\n60")
-
         ),
 
 
@@ -30,9 +32,12 @@ mainPanel(
         br(),
 
         h3("Overlayed histograms"),
+        downloadButton('downloadDistPlot', 'Download the plot as pdf'),
+
         plotOutput("distPlot"),
 
         h3("Box plots with individual data points"),
+        downloadButton('downloadBoxPlot', 'Download the plot as pdf'),
         plotOutput("boxPlot", width="80%"),
 
         br(),
@@ -63,7 +68,13 @@ mainPanel(
         br(),
 
         h3("Power analysis (Just for a reference)"),
-        verbatimTextOutput("power.out")
+        verbatimTextOutput("power.out"),
+
+        br(),
+        br(),
+
+        strong('R session info'),
+        verbatimTextOutput("info.out")
 
         ),
 
@@ -76,9 +87,12 @@ mainPanel(
 
         br(),
 
-        strong('Input values'),
-            p('Input values can be separated by newlines, spaces, commas, or tabs.'),
-
+        strong('List of Packages Used'), br(),
+        code('library(shiny)'),br(),
+        code('library(psych)'),br(),
+        code('library(car)'),br(),
+        code('library(compute.es)'),br(),
+        code('library(pwr)'),br(),
         br(),
 
         strong('Code'),
