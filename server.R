@@ -3,6 +3,8 @@ library(psych)
 library(car)
 library(compute.es)
 library(pwr)
+library(beeswarm)
+
 
 
 shinyServer(function(input, output) {
@@ -106,7 +108,7 @@ shinyServer(function(input, output) {
         
         boxplot(score ~ group, las=1, xlab= "Means and +/-1 SDs are displayed in red.")
         
-        stripchart(score ~ group, pch = 16, , vert = TRUE,  add = TRUE)
+        beeswarm(score ~ group, col = 4, pch = 16, add = TRUE)
         
         points(1.2, mean(x), pch = 18, col = "red", cex = 2)
         arrows(1.2, mean(x), 1.2, mean(x) + sd(x), length = 0.1, angle = 45, col = "red")
@@ -315,28 +317,6 @@ shinyServer(function(input, output) {
         power()
     })
     
-    output$downloadDistPlot <- downloadHandler(
-    filename = function() {
-        paste('Distribution -', Sys.Date(), '.pdf', sep='')
-    },
-    content = function(FILE=NULL) {
-        pdf(file=FILE)
-		print(makedistPlot())
-		dev.off()
-	})
-    
-    output$downloadBoxPlot <- downloadHandler(
-    filename = function() {
-        paste('Boxplot-', Sys.Date(), '.pdf', sep='')
-    },
-    content = function(FILE=NULL) {
-        pdf(file=FILE)
-		print(makeboxPlot())
-		dev.off()
-	})
-
-
-
 
 
 })

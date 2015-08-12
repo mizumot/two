@@ -32,12 +32,11 @@ mainPanel(
         br(),
 
         h3("Overlayed histograms"),
-        downloadButton('downloadDistPlot', 'Download the plot as pdf'),
 
         plotOutput("distPlot"),
 
         h3("Box plots with individual data points"),
-        downloadButton('downloadBoxPlot', 'Download the plot as pdf'),
+
         plotOutput("boxPlot", width="80%"),
 
         br(),
